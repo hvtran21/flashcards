@@ -1,151 +1,81 @@
-"use client";
+import { AppBar, Toolbar, Typography, Button, Box, Grid } from "@mui/material";
 
-import { useState } from "react";
-import {
-  Container,
-  TextField,
-  Button,
-  Typography,
-  Box,
-  Grid,
-  Card,
-  CardContent,
-} from "@mui/material";
+import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 
-export default function Generate() {
-  const [text, setText] = useState("");
-  const [flashcards, setFlashcards] = useState([]);
+export default function App() {
 
-  const [setName, setSetName] = useState("");
-  const [dialogOpen, setDialogOpen] = useState(false);
-
-  const handleOpenDialog = () => setDialogOpen(true);
-  const handleCloseDialog = () => setDialogOpen(false);
-
-  // handles saving flashcards to the firebase database
-  const saveFlashcards = async () => {
-    if (!setName.trim()) {
-      alert("Please enter a name for your flashcard set.");
-      return;
-    }
-
-    try {
-      const userDocRef = doc(collection(db, "users"), user.id);
-      const userDocSnap = await getDoc(userDocRef);
-
-      const batch = writeBatch(db);
-
-      if (userDocSnap.exists()) {
-        const userData = userDocSnap.data();
-        const updatedSets = [
-          ...(userData.flashcardSets || []),
-          { name: setName },
-        ];
-        batch.update(userDocRef, { flashcardSets: updatedSets });
-      } else {
-        batch.set(userDocRef, { flashcardSets: [{ name: setName }] });
-      }
-
-      const setDocRef = doc(collection(userDocRef, "flashcardSets"), setName);
-      batch.set(setDocRef, { flashcards });
-
-      await batch.commit();
-
-      alert("Flashcards saved successfully!");
-      handleCloseDialog();
-      setSetName("");
-    } catch (error) {
-      console.error("Error saving flashcards:", error);
-      alert("An error occurred while saving flashcards. Please try again.");
-    }
-  };
-
-  // handles submit button, using text given in the text box
   const handleSubmit = async () => {
-    if (!text.trim()) {
-      alert("Please enter some text to generate flashcards.");
-      return;
+    const checkoutSession = await fetch('/api/checkout_sessions', {
+      method: 'POST',
+      headers: { origin: 'http://localhost:3000' },
+    })
+    const checkoutSessionJson = await checkoutSession.json()
+  
+    const stripe = await getStripe()
+    const {error} = await stripe.redirectToCheckout({
+      sessionId: checkoutSessionJson.id,
+    })
+  
+    if (error) {
+      console.warn(error.message)
     }
-
-    try {
-      const response = await fetch("/api/generate", {
-        method: "POST",
-        body: text,
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to generate flashcards");
-      }
-
-      const data = await response.json();
-      setFlashcards(data);
-    } catch (error) {
-      console.error("Error generating flashcards:", error);
-      alert("An error occurred while generating flashcards. Please try again.");
-    }
-  };
-
+  }
+  
   return (
-    <Container maxWidth="md" sx={{ bgcolor: "white", p: 3 }}>
-      {flashcards.length > 0 && (
-        <Box sx={{ mt: 4, display: "flex", justifyContent: "center" }}>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleOpenDialog}
-          >
-            Save Flashcards
-          </Button>
-        </Box>
-      )}
-
-      <Box sx={{ my: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
-          Generate Flashcards
+    <div>
+      <AppBar position="static">
+        <Toolbar>
+          <Typography variant="h6" style={{ flexGrow: 1 }}>
+            Flashcard SaaS
+          </Typography>
+          <SignedOut>
+            <Button color="inherit" href="/sign-in">
+              Login
+            </Button>
+            <Button color="inherit" href="/sign-up">
+              Sign Up
+            </Button>
+          </SignedOut>
+          <SignedIn>
+            <UserButton />
+          </SignedIn>
+        </Toolbar>
+      </AppBar>
+      <Box sx={{ textAlign: "center", my: 4 }}>
+        <Typography variant="h2" component="h1" gutterBottom>
+          Welcome to Flashcard SaaS
         </Typography>
-        <TextField
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          label="Enter text"
-          fullWidth
-          multiline
-          rows={4}
-          variant="outlined"
-          sx={{ mb: 2 }}
-        />
+        <Typography variant="h5" component="h2" gutterBottom>
+          The easiest way to create flashcards from your text.
+        </Typography>
         <Button
           variant="contained"
           color="primary"
-          onClick={handleSubmit}
-          fullWidth
+          sx={{ mt: 2, mr: 2 }}
+          href="/generate"
         >
-          Generate Flashcards
+          Get Started
         </Button>
-
-        {flashcards.length > 0 && (
-          <Box sx={{ mt: 4, bgcolor: "white", p: 3 }}>
-            <Typography variant="h5" component="h2" gutterBottom>
-              Generated Flashcards
-            </Typography>
-            <Grid container spacing={2}>
-              {flashcards.map((flashcard, index) => (
-                <Grid item xs={12} sm={6} md={4} key={index}>
-                  <Card>
-                    <CardContent>
-                      <Typography variant="h6">Front:</Typography>
-                      <Typography>{flashcard.front}</Typography>
-                      <Typography variant="h6" sx={{ mt: 2 }}>
-                        Back:
-                      </Typography>
-                      <Typography>{flashcard.back}</Typography>
-                    </CardContent>
-                  </Card>
-                </Grid>
-              ))}
-            </Grid>
-          </Box>
-        )}
+        <Button variant="outlined" color="primary" sx={{ mt: 2 }}>
+          Learn More
+        </Button>
       </Box>
-    </Container>
+      <Box sx={{ my: 6 }}>
+        <Typography variant="h4" component="h2" gutterBottom>
+          Features
+        </Typography>
+        <Grid container spacing={4}>
+          {/* Feature items */}
+        </Grid>
+      </Box>
+      <Box sx={{ my: 6, textAlign: "center" }}>
+        <Typography variant="h4" component="h2" gutterBottom>
+          Pricing
+        </Typography>
+        <Grid container spacing={4} justifyContent="center">
+          {/* Pricing plans */}
+        </Grid>
+      </Box>
+    </div>
   );
 }
