@@ -131,22 +131,6 @@ export default function Generate() {
               </Button>
             </DialogActions>
           </Dialog>
-          {/* {dialogOpen && (
-            <div>
-              <form> 
-                <input
-                  value={setName}
-                  className="col-span-2 p-3 border mx-3"
-                  type="text"
-                  placeholder="Enter name"
-                  onChange={(e) =>
-                    setSetName(e.target.value)
-                  }
-                />
-                <button onClick={(e) => {e.preventDefault(); saveFlashcards()}}> Submit </button>
-              </form>
-            </div>
-          )} */}
         </Box>
       )}
 
