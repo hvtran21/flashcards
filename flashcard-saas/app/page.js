@@ -3,24 +3,23 @@ import { AppBar, Toolbar, Typography, Button, Box, Grid } from "@mui/material";
 import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 
 export default function App() {
-
   const handleSubmit = async () => {
-    const checkoutSession = await fetch('/api/checkout_sessions', {
-      method: 'POST',
-      headers: { origin: 'http://localhost:3000' },
-    })
-    const checkoutSessionJson = await checkoutSession.json()
-  
-    const stripe = await getStripe()
-    const {error} = await stripe.redirectToCheckout({
+    const checkoutSession = await fetch("/api/checkout_sessions", {
+      method: "POST",
+      headers: { origin: "http://localhost:3000" },
+    });
+    const checkoutSessionJson = await checkoutSession.json();
+
+    const stripe = await getStripe();
+    const { error } = await stripe.redirectToCheckout({
       sessionId: checkoutSessionJson.id,
-    })
-  
+    });
+
     if (error) {
-      console.warn(error.message)
+      console.warn(error.message);
     }
-  }
-  
+  };
+
   return (
     <div>
       <AppBar position="static">
@@ -37,6 +36,14 @@ export default function App() {
             </Button>
           </SignedOut>
           <SignedIn>
+            <Button
+              href="/flashcard"
+              variant="contained"
+              color="primary"
+              sx={{ mt: 2 }}
+            >
+              Saved flashcards
+            </Button>
             <UserButton />
           </SignedIn>
         </Toolbar>
@@ -60,12 +67,21 @@ export default function App() {
           Learn More
         </Button>
       </Box>
-      <Box sx={{ my: 6 }}>
+      <Box paddingLeft={2} sx={{ my: 6 }}>
         <Typography variant="h4" component="h2" gutterBottom>
           Features
         </Typography>
         <Grid container spacing={4}>
           {/* Feature items */}
+          <Box paddingTop={1} paddingLeft={3} sx={{ my: 6 }}>
+            <Typography variant="h5" component="h2" gutterBottom>
+              - AI Generated Flashcards
+            </Typography>
+
+            <Typography variant="h5" component="h2" gutterBottom>
+              - Save flashcards for later use
+            </Typography>
+          </Box>
         </Grid>
       </Box>
       <Box sx={{ my: 6, textAlign: "center" }}>

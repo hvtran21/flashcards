@@ -14,11 +14,17 @@ import {
   DialogTitle,
   DialogContent,
   DialogContentText,
-  DialogActions
+  DialogActions,
 } from "@mui/material";
 
-import { doc, getDoc, writeBatch, collection, addDoc } from "firebase/firestore";
-import db from '../../utils/firebase';
+import {
+  doc,
+  getDoc,
+  writeBatch,
+  collection,
+  addDoc,
+} from "firebase/firestore";
+import db from "../../utils/firebase";
 
 import { useUser } from "@clerk/nextjs";
 
@@ -29,11 +35,11 @@ export default function Generate() {
   const [setName, setSetName] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  const { isLoaded, isSignedIn, user } = useUser()
-
+  const { isLoaded, isSignedIn, user } = useUser();
 
   const handleOpenDialog = () => setDialogOpen(true);
   const handleCloseDialog = () => setDialogOpen(false);
+  const [flippedIndex, setFlippedIndex] = useState(null);
 
   // handles saving flashcards to the firebase database
   const saveFlashcards = async () => {
@@ -43,8 +49,8 @@ export default function Generate() {
     }
 
     if (!user) {
-        alert("Please sign in")
-        return;
+      alert("Please sign in");
+      return;
     }
 
     try {
@@ -76,6 +82,11 @@ export default function Generate() {
       console.log("Error saving flashcards:", error);
       alert("An error occurred while saving flashcards. Please try again.");
     }
+  };
+
+  // function to handle when a user clicks on a flashcard, it'll display the back
+  const handleClick = (index) => {
+    setFlippedIndex((prevIndex) => (prevIndex === index ? null : index));
   };
 
   // handles submit button, using text given in the text box
@@ -178,14 +189,19 @@ export default function Generate() {
             <Grid container spacing={2}>
               {flashcards.map((flashcard, index) => (
                 <Grid item xs={12} sm={6} md={4} key={index}>
-                  <Card>
+                  <Card
+                    onClick={() => handleClick(index)}
+                    sx={{ cursor: "pointer", padding: 2 }}
+                  >
                     <CardContent>
-                      <Typography variant="h6">Front:</Typography>
-                      <Typography>{flashcard.front}</Typography>
-                      <Typography variant="h6" sx={{ mt: 2 }}>
-                        Back:
+                      <Typography variant="h6">
+                        {flippedIndex === index ? "Back" : "Front"}:
                       </Typography>
-                      <Typography>{flashcard.back}</Typography>
+                      <Typography>
+                        {flippedIndex === index
+                          ? flashcard.back
+                          : flashcard.front}
+                      </Typography>
                     </CardContent>
                   </Card>
                 </Grid>
