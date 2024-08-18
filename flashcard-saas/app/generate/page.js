@@ -17,12 +17,20 @@ import {
   DialogActions
 } from "@mui/material";
 
+import { doc, getDoc, writeBatch, collection, addDoc } from "firebase/firestore";
+import db from '../../utils/firebase';
+
+import { useUser } from "@clerk/nextjs";
+
 export default function Generate() {
   const [text, setText] = useState("");
   const [flashcards, setFlashcards] = useState([]);
 
   const [setName, setSetName] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  const { isLoaded, isSignedIn, user } = useUser()
+
 
   const handleOpenDialog = () => setDialogOpen(true);
   const handleCloseDialog = () => setDialogOpen(false);
@@ -32,6 +40,11 @@ export default function Generate() {
     if (!setName.trim()) {
       alert("Please enter a name for your flashcard set.");
       return;
+    }
+
+    if (!user) {
+        alert("Please sign in")
+        return;
     }
 
     try {
@@ -60,7 +73,7 @@ export default function Generate() {
       handleCloseDialog();
       setSetName("");
     } catch (error) {
-      alert("Error saving flashcards:", error);
+      console.log("Error saving flashcards:", error);
       alert("An error occurred while saving flashcards. Please try again.");
     }
   };
